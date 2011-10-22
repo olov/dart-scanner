@@ -20,16 +20,12 @@
  * Represents a position in a source file, including absolute character position,
  * line, and column.
  */
-class Position /*implements Cloneable*/ {
+class Position {
   int pos;
   int line;
   int col;
 
-  Position(int pos, int line, int col) {
-    this.pos = pos;
-    this.line = line;
-    this.col = col;
-  }
+  Position(int this.pos, int this.line, int this.col) {}
 
   Position clone() => new Position(pos, line, col);
 
@@ -56,7 +52,7 @@ class Position /*implements Cloneable*/ {
 /**
  * Represents a span of characters in a source file.
  */
-class Location /*implements Cloneable*/ {
+class Location {
   static final Location NONE = null;
   Position begin, end;
 
@@ -65,7 +61,8 @@ class Location /*implements Cloneable*/ {
     this.end = (null != end ? end : begin);
   }
 
-  Location clone() => new Location(begin.clone(), end.clone()); // todo specialcase if begin == end
+  Location clone() => new Location(begin.clone(),
+                                   (begin == end) ? null : end.clone());
 
   Position getBegin() {
     return begin;
@@ -84,25 +81,20 @@ class RollbackToken {
   final int absoluteOffset;
   final Token replacedToken;
 
-  RollbackToken(int tokenOffset, Token token) {
-    absoluteOffset = tokenOffset;
-    replacedToken = token;
+  RollbackToken(int tokenOffset, Token token) : absoluteOffset = tokenOffset,
+    replacedToken = token {
   }
 }
 
 
 class State {
-  State(int baseOffset) {
-    this.baseOffset = baseOffset;
-  }
+  State(int this.baseOffset) {}
 
   /* Stack of tokens present before setPeek() */
-  Queue<RollbackToken> rollbackTokens = null;
+  List<RollbackToken> rollbackTokens = null;
   final int baseOffset;
 
-  String toString() {
-    return "ofs=" + baseOffset;
-  }
+  String toString() => "ofs=$baseOffset";
 }
 
 
@@ -124,7 +116,7 @@ class Mode {
    *        ^
    * </pre>
    */
-  static final int   IN_STRING_EMBEDDED_EXPRESSION_IDENTIFIER = 3;
+  static final int IN_STRING_EMBEDDED_EXPRESSION_IDENTIFIER = 3;
 
   /**
    * Inside a string, just after having scanned a string-interpolation identifier.
@@ -133,7 +125,7 @@ class Mode {
    *          ^
    * </pre>
    */
-  static final int  IN_STRING_EMBEDDED_EXPRESSION_END = 4;
+  static final int IN_STRING_EMBEDDED_EXPRESSION_END = 4;
 }
 
 
@@ -158,8 +150,7 @@ class StringState {
    * @param quote
    * @param multiLine
    */
-  StringState(int mode, String quote, bool multiLine) :
-  mode = mode, quote = quote, multiLine = multiLine {
+  StringState(int this.mode, String this.quote, bool this.multiLine) {
     bracesCount = mode == Mode.IN_STRING_EMBEDDED_EXPRESSION ? 1 : 0;
   }
 
@@ -228,7 +219,6 @@ class StringState {
  * Stores the entire state for the scanner.
  */
 class InternalState {
-
   List<String> lookahead;
   List<Position> lookaheadPos;
   Position nextLookaheadPos;
@@ -377,24 +367,23 @@ class InternalState {
   }
 }
 
-class TokenData /*implements Cloneable*/ {
+class TokenData {
   Token token;
   Location location;
   String value;
 
   TokenData clone() {
-    try {
-      TokenData clone = (TokenData) super.clone();
-      clone.location = location == null ? null : location.clone();
-      return clone;
-    } catch (CloneNotSupportedException e) {
-      throw new AssertionError(e);
-    }
+    TokenData clone = new TokenData();
+    // token and value are immutable
+    clone.token = token;
+    clone.location = (location == null) ? null : location.clone();
+    clone.value = value;
+    return clone;
   }
 
   String toString() {
     String str = token.toString();
-    return (value != null) ? str + "(" + value + ")" : str;
+    return (value != null) ? "$str($value)" : str;
   }
 }
 
@@ -402,21 +391,12 @@ class TokenData /*implements Cloneable*/ {
 
 
 
-
-
-
-
-
 final int NUM_LOOKAHEAD = 2;
-
 
 /**
  * The Dart scanner. Should normally be used only by {@link DartParser}.
  */
 class DartScanner {
-
-
-
   static bool isDecimalDigit(String c) {
     return c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
   }
