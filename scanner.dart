@@ -1,20 +1,9 @@
-#library("scanner.dart");
-#import("token.dart");
-
 // Copyright (c) 2011, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-//package com.google.dart.compiler.parser;
-
-//import com.google.dart.compiler.metrics.DartEventType;
-//import com.google.dart.compiler.metrics.Tracer;
-//import com.google.dart.compiler.metrics.Tracer.TraceEvent;
-
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.Stack;
-
+#library("scanner.dart");
+#import("token.dart");
 
 /**
  * Represents a position in a source file, including absolute character position,

@@ -400,4 +400,3 @@ class Token {
     return (syntax_ != null) ? syntax_ : name_;
   }
 }
-
