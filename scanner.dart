@@ -703,7 +703,7 @@ class DartScanner {
     recordCommentLocation(start, stop, startLine, col);
   }
 
-  bool isa(String c) {
+  bool isChar(String c) {
     return internalState.lookahead[0] == c;
   }
 
@@ -767,11 +767,11 @@ class DartScanner {
 
   Token scanNumber() {
     bool isDouble = false;
-    assert (isDecimalDigit(lookahead(0)) || isa('.'));
+    assert (isDecimalDigit(lookahead(0)) || isChar('.'));
     Position begin = position();
     while (isDecimalDigit(lookahead(0)))
       advance();
-    if (isa('.') && isDecimalDigit(lookahead(1))) {
+    if (isChar('.') && isDecimalDigit(lookahead(1))) {
       isDouble = true;
       advance();  // Consume .
       while (isDecimalDigit(lookahead(0)))
@@ -780,7 +780,7 @@ class DartScanner {
     if (isE()) {
       isDouble = true;
       advance();
-      if (isa('+') || isa('-')) {
+      if (isChar('+') || isChar('-')) {
         advance();
       }
       if (!isDecimalDigit(lookahead(0))) {
@@ -798,7 +798,7 @@ class DartScanner {
   }
 
   bool isE() {
-    return isa('e') || isa('E');
+    return isChar('e') || isChar('E');
   }
 
   Token scanHexNumber() {
@@ -824,7 +824,7 @@ class DartScanner {
 
   Token scanString(bool isRaw) {
     String quote = lookahead(0);
-    assert (isa('\'') || isa('"'));
+    assert (isChar('\'') || isChar('"'));
     bool multiLine = false;
     advance();
 
@@ -835,7 +835,7 @@ class DartScanner {
       advance();
       // according to the dart guide, when multi-line strings start immediatelly
       // with a \n, the \n is not part of the string:
-      if (isa('\n')) {
+      if (isChar('\n')) {
         advance();
       }
     }
@@ -1096,23 +1096,23 @@ class DartScanner {
       case '<':
         // < <= << <<=
         advance();
-        if (isa('='))
+        if (isChar('='))
           return select(Token.LTE);
-        if (isa('<'))
+        if (isChar('<'))
           return selectNext('=', Token.ASSIGN_SHL, Token.SHL);
         return Token.LT;
 
       case '>':
         // > >= >> >>= >>> >>>=
         advance();
-        if (isa('='))
+        if (isChar('='))
           return select(Token.GTE);
-        if (isa('>')) {
+        if (isChar('>')) {
           // >> >>= >>> >>>=
           advance();
-          if (isa('='))
+          if (isChar('='))
             return select(Token.ASSIGN_SAR);
-          if (isa('>'))
+          if (isChar('>'))
             return selectNext('=', Token.ASSIGN_SHR, Token.SHR);
           return Token.SAR;
         }
@@ -1121,35 +1121,35 @@ class DartScanner {
       case '=':
         // = == === =>
         advance();
-        if (isa('>')) {
+        if (isChar('>')) {
           return select(Token.ARROW);
         }
-        if (isa('='))
+        if (isChar('='))
           return selectNext('=', Token.EQ_STRICT, Token.EQ);
         return Token.ASSIGN;
 
       case '!':
         // ! != !==
         advance();
-        if (isa('='))
+        if (isChar('='))
           return selectNext('=', Token.NE_STRICT, Token.NE);
         return Token.NOT;
 
       case '+':
         // + ++ +=
         advance();
-        if (isa('+'))
+        if (isChar('+'))
           return select(Token.INC);
-        if (isa('='))
+        if (isChar('='))
           return select(Token.ASSIGN_ADD);
         return Token.ADD;
 
       case '-':
         // - -- -=
         advance();
-        if (isa('-'))
+        if (isChar('-'))
           return select(Token.DEC);
-        if (isa('='))
+        if (isChar('='))
           return select(Token.ASSIGN_SUB);
         return Token.SUB;
 
@@ -1164,29 +1164,29 @@ class DartScanner {
       case '/':
         // / // /* /=
         advance();
-        if (isa('/'))
+        if (isChar('/'))
           return skipSingleLineComment();
-        if (isa('*'))
+        if (isChar('*'))
           return skipMultiLineComment();
-        if (isa('='))
+        if (isChar('='))
           return select(Token.ASSIGN_DIV);
         return Token.DIV;
 
       case '&':
         // & && &=
         advance();
-        if (isa('&'))
+        if (isChar('&'))
           return select(Token.AND);
-        if (isa('='))
+        if (isChar('='))
           return select(Token.ASSIGN_BIT_AND);
         return Token.BIT_AND;
 
       case '|':
         // | || |=
         advance();
-        if (isa('|'))
+        if (isChar('|'))
           return select(Token.OR);
-        if (isa('='))
+        if (isChar('='))
           return select(Token.ASSIGN_BIT_OR);
         return Token.BIT_OR;
 
@@ -1225,7 +1225,7 @@ class DartScanner {
 
       case '[':
         advance();
-        if (isa(']')) {
+        if (isChar(']')) {
           return selectNext('=', Token.ASSIGN_INDEX, Token.INDEX);
         }
         return Token.LBRACK;
@@ -1250,7 +1250,7 @@ class DartScanner {
       case '~':
         // ~ ~/ ~/=
         advance();
-        if (isa('/')) {
+        if (isChar('/')) {
           if (lookahead(1) == '=') {
             advance();
             return select(Token.ASSIGN_TRUNC);
@@ -1264,7 +1264,7 @@ class DartScanner {
       case '@':
         // Raw strings.
         advance();
-        if (isa('\'') || isa('"')) {
+        if (isChar('\'') || isChar('"')) {
           bool isRaw = true;
           return scanString(isRaw);
         } else {
@@ -1296,7 +1296,7 @@ class DartScanner {
    * Scan for #library, #import, #source, and #resource directives
    */
   Token scanDirective() {
-    assert (isa('#'));
+    assert (isChar('#'));
     Position currPos = position();
     int start = currPos.pos;
     int line = currPos.line;
@@ -1346,7 +1346,7 @@ class DartScanner {
   }
 
   Token skipMultiLineComment() {
-    assert (isa('*'));
+    assert (isChar('*'));
     Position currPos = internalState.lookaheadPos[0];
     int start = currPos.pos - 1;
     int line = currPos.line;
@@ -1355,7 +1355,7 @@ class DartScanner {
     while (!isEos()) {
       String first = lookahead(0);
       advance();
-      if (first == '*' && isa('/')) {
+      if (first == '*' && isChar('/')) {
         Token result = select(Token.COMMENT);
         int stop = internalState.lookaheadPos[0].pos;
         commentLocation(start, stop, line, internalState.lookaheadPos[0].line, col);
@@ -1369,7 +1369,7 @@ class DartScanner {
   }
 
   Token skipSingleLineComment() {
-    assert (isa('/'));
+    assert (isChar('/'));
     Position currPos = internalState.lookaheadPos[0];
     int start = currPos.pos - 1;
     int line = currPos.line;
