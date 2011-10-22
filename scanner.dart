@@ -214,11 +214,10 @@ class StringState {
   }
 
   String toString() {
-    assert(false);
-    StringBuilder buf = new StringBuilder();
-    buf.append(mode).append("/quote=").appendCodePoint(quote);
+    StringBuffer buf = new StringBuffer();
+    buf.add(mode).add("/quote=").add(quote);
     if (multiLine) {
-      buf.append("/multiline");
+      buf.add("/multiline");
     }
     return buf.toString();
   }
@@ -287,10 +286,10 @@ class InternalState {
     ret.add("]");
     if (getMode() != Mode.DEFAULT) {
       ret.add("(within string starting with ");
-      ret.add(new String.fromCharCodes([getQuote()]));
+      ret.add(getQuote());
       if (isMultiLine()) {
-        ret.add(new String.fromCharCodes([getQuote()]));
-        ret.add(new String.fromCharCodes([getQuote()]));
+        ret.add(getQuote());
+        ret.add(getQuote());
       }
       ret.add(')');
     }
@@ -301,14 +300,14 @@ class InternalState {
    * @return the current scanning mode
    */
   int getMode() {
-    return stringStateStack.isEmpty() ? Mode.DEFAULT : getCurrentState().getMode();
+    return stringStateStack.length == 0 ? Mode.DEFAULT : getCurrentState().getMode();
   }
 
   /**
    * Mark that we have seen an open brace.
    */
   void openBrace() {
-    if (!stringStateStack.isEmpty()) {
+    if (stringStateStack.length > 0) {
       getCurrentState().openBrace();
     }
   }
@@ -319,7 +318,7 @@ class InternalState {
    * @return true if the current mode is now complete and should be popped
    */
   bool closeBrace() {
-    if (!stringStateStack.isEmpty()) {
+    if (stringStateStack.length > 0) {
       return getCurrentState().closeBrace();
     }
     return false;
@@ -329,8 +328,8 @@ class InternalState {
    * Pop the current mode.
    */
   void popMode() {
-    if (!stringStateStack.isEmpty()) {
-      stringStateStack.remove(stringStateStack.length - 1);
+    if (stringStateStack.length > 0) {
+      stringStateStack.removeLast();
     }
   }
 
@@ -366,8 +365,8 @@ class InternalState {
    * @return the current string scanning state
    */
   StringState getCurrentState() {
-    assert !stringStateStack.isEmpty() : "called with empty state stack";
-    return stringStateStack.get(stringStateStack.length - 1);
+    assert(stringStateStack.length > 0); //"called with empty state stack"
+    return stringStateStack.last();
   }
 
   /**
@@ -874,7 +873,7 @@ class DartScanner {
           break;
         }
       }
-      tokenValueBuffer.appendCodePoint(c);
+      tokenValueBuffer.add(c);
     }
     internalState.lastToken.value = tokenValueBuffer.toString();
     internalState.popMode();
@@ -900,7 +899,7 @@ class DartScanner {
     assert (internalState.getMode() == Mode.IN_STRING);
     String quote = internalState.getQuote();
     bool multiLine = internalState.isMultiLine();
-    assert(false);
+
     StringBuffer tokenValueBuffer = new StringBuffer();
     while (true) {
       if (isEos()) {
@@ -979,7 +978,7 @@ class DartScanner {
             }
             while (len != 0) {
               advance();
-              int digit = Character.getNumericValue(c);
+              int digit = c.charCodeAt(0);
               if (digit < 0 || digit > 15) {
                 // TODO(jat): how to handle an error?  We would prefer to give a better error
                 // message about an invalid Unicode escape sequence
@@ -1002,14 +1001,17 @@ class DartScanner {
                 return Token.ILLEGAL;
               }
             }
-            c = unicodeCodePoint;
+            c = new String.fromCharCodes([unicodeCodePoint]);
+            // TODO implement valid codepoint checking in Dart?
             // Unicode escapes must specify a valid Unicode scalar value, and may not specify
             // UTF16 surrogates.
+            /*
             if (!Character.isValidCodePoint(c) || (c < 0x10000
                 && (Character.isHighSurrogate((char) c) || Character.isLowSurrogate((char) c)))) {
               // TODO(jat): better way to indicate error
               return Token.ILLEGAL;
             }
+            */
             // TODO(jat): any other checks?  We could use Character.isDefined, but then we risk
             // version skew with the JRE's Unicode data.  For now, assume anything in the Unicode
             // range besides surrogates are fine.
@@ -1045,7 +1047,7 @@ class DartScanner {
       } else {
         advance();
       }
-      tokenValueBuffer.appendCodePoint(c);
+      tokenValueBuffer.add(c);
     }
 
     internalState.lastToken.value = tokenValueBuffer.toString();
@@ -1071,7 +1073,7 @@ class DartScanner {
         } else {
           internalState.popMode();
           if (!isEos()) {
-            internalState.lastToken.value = new String.fromCharCodes([c]);
+            internalState.lastToken.value = c;
           }
           return Token.ILLEGAL;
         }
@@ -1312,7 +1314,8 @@ class DartScanner {
     }
 
     // Directives must start at the beginning of a line
-    if (start > 0 && !isLineTerminator(source.codePointBefore(start)))
+    // TODO test off-by-one
+    if (start > 0 && !isLineTerminator(source[start - 1]));
       return select(Token.ILLEGAL);
 
     // Determine which directive is being specified

@@ -9,7 +9,7 @@ main() {
   //print(Token.lookup("=="));
   //print(Token.tokens["=="]);
 
-  var scanner = new DartScanner("int hello = 42;");
-  //var scanner = new DartScanner("main() { print('hello') }");
+  //var scanner = new DartScanner("int hello = 42;");
+  var scanner = new DartScanner("main() { print('hello') }");
   print(scanner.internalState);
 }
