@@ -10,5 +10,6 @@ main() {
   print(Token.tokens["=="]);
 
   var scanner = new DartScanner("var x;");
-  //  var scanner = new DartScanner("main() { print('hello') }");
+  //var scanner = new DartScanner("main() { print('hello') }");
+  print(scanner.internalState);
 }

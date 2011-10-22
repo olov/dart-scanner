@@ -147,7 +147,7 @@ class StringState {
   int bracesCount;
   int mode;
   final bool multiLine;
-  final int quote;
+  final String quote;
 
   /**
    * Push a new mode on state stack.  If the new mode is
@@ -158,11 +158,9 @@ class StringState {
    * @param quote
    * @param multiLine
    */
-  StringState(int mode, int quote, bool multiLine) {
-    this.bracesCount = mode == Mode.IN_STRING_EMBEDDED_EXPRESSION ? 1 : 0;
-    this.mode = mode;
-    this.quote = quote;
-    this.multiLine = multiLine;
+  StringState(int mode, String quote, bool multiLine) :
+  mode = mode, quote = quote, multiLine = multiLine {
+    bracesCount = mode == Mode.IN_STRING_EMBEDDED_EXPRESSION ? 1 : 0;
   }
 
   /**
@@ -195,10 +193,9 @@ class StringState {
   }
 
   /**
-   * @return the codepoint of the quote character used to bound the current
-   * string.
+   * @return the quote character used to bound the current string.
    */
-  int getQuote() {
+  String getQuote() {
     return quote;
   }
 
@@ -233,7 +230,7 @@ class StringState {
  */
 class InternalState {
 
-  List<int> lookahead;
+  List<String> lookahead;
   List<Position> lookaheadPos;
   Position nextLookaheadPos;
   List<TokenData> tokens;
@@ -254,7 +251,7 @@ class InternalState {
   List<StringState> stringStateStack;
 
   InternalState() {
-    lookahead = new List<int>(NUM_LOOKAHEAD); // TODO ATT null-initialized
+    lookahead = new List<String>(NUM_LOOKAHEAD); // TODO ATT null-initialized
     lookaheadPos = new List<Position>(NUM_LOOKAHEAD); // TODO ATT null-initialized
     stringStateStack = new List<StringState>();
     currentOffset = 0;
@@ -340,7 +337,7 @@ class InternalState {
   /**
    * @param mode the mode to push
    */
-  void pushMode(int mode, int quote, bool multiLine) {
+  void pushMode(int mode, String quote, bool multiLine) {
     stringStateStack.add(new StringState(mode, quote, multiLine));
   }
 
@@ -361,7 +358,7 @@ class InternalState {
   /**
    * @return the quote
    */
-  int getQuote() {
+  String getQuote() {
     return getCurrentState().getQuote();
   }
 
@@ -411,7 +408,6 @@ class TokenData /*implements Cloneable*/ {
 
 
 
-
 final int NUM_LOOKAHEAD = 2;
 
 
@@ -422,27 +418,27 @@ class DartScanner {
 
 
 
-  static bool isDecimalDigit(int c) {
-    return c >= '0' && c <= '9';
+  static bool isDecimalDigit(String c) {
+    return c.compareTo('0') >= 0 && c.compareTo('9') <= 0;
   }
 
-  static bool isHexDigit(int c) {
-    return isDecimalDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+  static bool isHexDigit(String c) {
+    return isDecimalDigit(c) || (c.compareTo('a') >= 0 && c.compareTo('f') <= 0) || (c.compareTo('A') >= 0 && c.compareTo('F') <= 0);
   }
 
-  static bool isIdentifierPart(int c) {
+  static bool isIdentifierPart(String c) {
     return isIdentifierStart(c) || isDecimalDigit(c);
   }
 
-  static bool isIdentifierStart(int c) {
-    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_') || (c == '\$');
+  static bool isIdentifierStart(String c) {
+    return (c.compareTo('a') >= 0 && c.compareTo('z') <= 0) || (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) || (c == '_') || (c == '\$');
   }
 
-  static bool isLineTerminator(int c) {
+  static bool isLineTerminator(String c) {
     return c == '\r' || c == '\n';
   }
 
-  static bool isWhiteSpace(int c) {
+  static bool isWhiteSpace(String c) {
     return c == ' ' || c == '\t';
   }
 
@@ -666,14 +662,14 @@ class DartScanner {
       internalState.lookaheadPos[i] = internalState.lookaheadPos[i + 1].clone();
     }
     if (internalState.nextLookaheadPos.pos < source.length) {
-      int ch = source.charCodeAt(internalState.nextLookaheadPos.pos);
+      String ch = source[internalState.nextLookaheadPos.pos];
       internalState.lookahead[NUM_LOOKAHEAD - 1] = ch;
       internalState.lookaheadPos[NUM_LOOKAHEAD - 1] = internalState.nextLookaheadPos.clone();
       internalState.nextLookaheadPos.advance(ch == '\n');
     } else {
       // Let the last look-ahead position be past the source. This makes
       // the position information for the last token correct.
-      internalState.lookahead[NUM_LOOKAHEAD - 1] = -1;
+      internalState.lookahead[NUM_LOOKAHEAD - 1] = '';
       internalState.lookaheadPos[NUM_LOOKAHEAD - 1] = new Position(source.length,
         internalState.nextLookaheadPos.line, internalState.nextLookaheadPos.col);
 
@@ -708,15 +704,15 @@ class DartScanner {
     recordCommentLocation(start, stop, startLine, col);
   }
 
-  bool isa(int c) {
+  bool isa(String c) {
     return internalState.lookahead[0] == c;
   }
 
   bool isEos() {
-    return internalState.lookahead[0] < 0;
+    return internalState.lookahead[0] == '';
   }
 
-  int lookahead(int n) {
+  String lookahead(int n) {
     assert (0 <= n && n < NUM_LOOKAHEAD);
     return internalState.lookahead[n];
   }
@@ -755,7 +751,7 @@ class DartScanner {
     assert (isIdentifierStart(lookahead(0)));
     Position begin = position();
     while (true) {
-      int nextChar = lookahead(0);
+      String nextChar = lookahead(0);
       if (!isIdentifierPart(nextChar) || (!allowDollars && nextChar == '\$')) {
         break;
       }
@@ -828,7 +824,7 @@ class DartScanner {
   }
 
   Token scanString(bool isRaw) {
-    int quote = lookahead(0);
+    String quote = lookahead(0);
     assert (isa('\'') || isa('"'));
     bool multiLine = false;
     advance();
@@ -854,7 +850,7 @@ class DartScanner {
 
   Token scanRawString() {
     assert (internalState.getMode() == Mode.IN_STRING);
-    int quote = internalState.getQuote();
+    String quote = internalState.getQuote();
     bool multiLine = internalState.isMultiLine();
     // TODO(floitsch): Do we really need a StringBuffer to accumulate the characters?
     assert(false);
@@ -865,7 +861,7 @@ class DartScanner {
         internalState.popMode();
         return Token.ILLEGAL;
       }
-      int c = lookahead(0);
+      String c = lookahead(0);
       advance();
       if (c == quote) {
         if (!multiLine) {
@@ -902,7 +898,7 @@ class DartScanner {
    */
   Token scanWithinString(bool start) {
     assert (internalState.getMode() == Mode.IN_STRING);
-    int quote = internalState.getQuote();
+    String quote = internalState.getQuote();
     bool multiLine = internalState.isMultiLine();
     assert(false);
     StringBuffer tokenValueBuffer = new StringBuffer();
@@ -912,7 +908,7 @@ class DartScanner {
         internalState.resetModes();
         return Token.EOS;
       }
-      int c = lookahead(0);
+      String c = lookahead(0);
       if (c == quote) {
         advance();
         if (!multiLine) {
@@ -1029,7 +1025,7 @@ class DartScanner {
         // function embedded expressions for string templates.
         if (tokenValueBuffer.length == 0) {
           advance();
-          int nextChar = lookahead(0);
+          String nextChar = lookahead(0);
           if (nextChar == '{') {
             advance();
             internalState.pushMode(Mode.IN_STRING_EMBEDDED_EXPRESSION, quote,
@@ -1068,7 +1064,7 @@ class DartScanner {
       case Mode.IN_STRING_EMBEDDED_EXPRESSION_IDENTIFIER:
         // We are inside a string looking for an identifier. Ex: "$foo".
         internalState.replaceMode(Mode.IN_STRING_EMBEDDED_EXPRESSION_END);
-        int c = lookahead(0);
+        String c = lookahead(0);
         if (isIdentifierStart(c) && c != '\$') {
           bool allowDollars = false;
           return scanIdentifier(allowDollars);
@@ -1322,7 +1318,7 @@ class DartScanner {
     // Determine which directive is being specified
     advance();
     while (true) {
-      int ch = lookahead(0);
+      String ch = lookahead(0);
       if (ch < 'a' || ch > 'z') {
         break;
       }
@@ -1354,7 +1350,7 @@ class DartScanner {
     int col = currPos.col;
     advance();
     while (!isEos()) {
-      int first = lookahead(0);
+      String first = lookahead(0);
       advance();
       if (first == '*' && isa('/')) {
         Token result = select(Token.COMMENT);

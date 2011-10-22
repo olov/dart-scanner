@@ -176,16 +176,17 @@ class Token {
   final String syntax_;
   final int precedence_;
   final int ordinal_;
+  final String name_;
 
   static initialize() {
     tokens = new HashMap<String, Token>();
     int ordinal = 0;
-    Token T(syntax, precedence) {
-      return new Token(syntax, precedence, ordinal++);
+    Token T(syntax, precedence, [name]) {
+      return new Token(syntax, precedence, ordinal++, name);
     }
 
     /* End-of-stream. */
-    EOS = T(null, 0);
+    EOS = T(null, 0, "EOS");
 
     /* Punctuators. */
     LPAREN = T("(", 0);
@@ -285,19 +286,19 @@ class Token {
     NULL_LITERAL = T("null", 0);
     TRUE_LITERAL = T("true", 0);
     FALSE_LITERAL = T("false", 0);
-    HEX_LITERAL = T(null, 0);
-    INTEGER_LITERAL = T(null, 0);
-    DOUBLE_LITERAL = T(null, 0);
-    STRING = T(null, 0);
+    HEX_LITERAL = T(null, 0, "HEX_LITERAL");
+    INTEGER_LITERAL = T(null, 0, "INTEGER_LITERAL");
+    DOUBLE_LITERAL = T(null, 0, "DOUBLE_LITERAL");
+    STRING = T(null, 0, "STRING");
 
     /** String interpolation and string templates. */
-    STRING_SEGMENT = T(null, 0);
-    STRING_LAST_SEGMENT = T(null, 0);
+    STRING_SEGMENT = T(null, 0, "STRING_SEGMENT");
+    STRING_LAST_SEGMENT = T(null, 0, "STRING_LAST_SEGMENT");
     // STRING_EMBED_EXP_START does not have a unique string representation in the code:
     //   "$id" yields the token STRING_EMBED_EXP_START after the '$', and similarly
     //   "${id}" yield the same token for '${'.
-    STRING_EMBED_EXP_START = T(null, 0);
-    STRING_EMBED_EXP_END = T(null, 0);
+    STRING_EMBED_EXP_START = T(null, 0, "STRING_EMBED_EXP_START");
+    STRING_EMBED_EXP_END = T(null, 0, "STRING_EMBED_EXP_END");
 
     // Note: STRING_EMBED_EXP_END uses the same symbol as RBRACE, but it is
     // recognized by the scanner when closing embedded expressions in string
@@ -311,13 +312,13 @@ class Token {
     NATIVE = T("#native", 0);
 
     /* Identifiers  = T(not keywords). */
-    IDENTIFIER = T(null, 0);
-    WHITESPACE = T(null, 0);
+    IDENTIFIER = T(null, 0, "IDENTIFIER");
+    WHITESPACE = T(null, 0, "WHITESPACE");
 
     /* Pseudo tokens. */
     // If you add another pseudo token, don't forget to update the predicate below.
-    ILLEGAL = T(null, 0);
-    COMMENT = T(null, 0);
+    ILLEGAL = T(null, 0, "ILLEGAL");
+    COMMENT = T(null, 0, "COMMENT");
 
     /**
      * Non-token to be used by tools where a value outside the range of anything
@@ -327,7 +328,7 @@ class Token {
      * This token is never returned by the scanner. It must have an ordinal
      * value outside the range of all tokens returned by the scanner.
      */
-    NON_TOKEN = T(null, 0);
+    NON_TOKEN = T(null, 0, "NON_TOKEN");
   }
 
   /**
@@ -338,8 +339,8 @@ class Token {
    * representation, or it is a pseudo token (which doesn't physically appear
    * in the source).
    */
-  Token(syntax, precedence, ordinal) : 
-  syntax_ = syntax, precedence_ = precedence, ordinal_ = ordinal {
+  Token(syntax, precedence, ordinal, name) :
+  syntax_ = syntax, precedence_ = precedence, ordinal_ = ordinal, name_ = name {
     if (null != syntax) {
       tokens[syntax] = this;
     }
@@ -395,11 +396,8 @@ class Token {
   }
 
   String toString() {
-    String result = getSyntax();
-    if (result == null) {
-      return name();
-    }
-    return result;
+    assert(syntax_ != null || name_ != null);
+    return (syntax_ != null) ? syntax_ : name_;
   }
 }
 
