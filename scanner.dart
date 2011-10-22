@@ -33,17 +33,9 @@ class Position /*implements Cloneable*/ {
 
   Position clone() => new Position(pos, line, col);
 
-  int getPos() {
-    return pos;
-  }
-
-  int getLine() {
-    return line;
-  }
-
-  int getCol() {
-    return col;
-  }
+  int getPos() => pos;
+  int getLine() => line;
+  int getCol() => col;
 
   void advance(bool isNewline) {
     ++pos;
