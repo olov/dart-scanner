@@ -410,10 +410,10 @@ class DartScanner {
     return c == ' ' || c == '\t';
   }
 
-  int commentLineCount;
-  int commentCharCount;
-  int lastCommentStart;
-  int lastCommentStop;
+  int commentLineCount = 0;
+  int commentCharCount = 0;
+  int lastCommentStart = 0;
+  int lastCommentStop = 0;
   String source;
   InternalState internalState;
 
@@ -1301,7 +1301,7 @@ class DartScanner {
     return token == Token.IDENTIFIER ? Token.ILLEGAL : token;
   }
 
-  Token selectNext(int next, Token yes, Token no) {
+  Token selectNext(String next, Token yes, Token no) {
     advance();
     if (lookahead(0) != next)
       return no;
