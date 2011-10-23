@@ -32,9 +32,7 @@ class Position {
     }
   }
 
-  String toString() {
-    return line + "," + col + "@" + pos;
-  }
+  String toString() => line + "," + col + "@" + pos;
 }
 
 
@@ -53,25 +51,18 @@ class Location {
   Location clone() => new Location(begin.clone(),
                                    (begin == end) ? null : end.clone());
 
-  Position getBegin() {
-    return begin;
-  }
+  Position getBegin() => begin;
+  Position getEnd() => end;
 
-  Position getEnd() {
-    return end;
-  }
-
-  String toString() {
-    return begin.toString() + "::" + end.toString();
-  }
+  String toString() => begin.toString() + "::" + end.toString();
 }
 
 class RollbackToken {
   final int absoluteOffset;
   final Token replacedToken;
 
-  RollbackToken(int tokenOffset, Token token) : absoluteOffset = tokenOffset,
-    replacedToken = token {
+  RollbackToken(int tokenOffset, Token token)
+      : absoluteOffset = tokenOffset, replacedToken = token {
   }
 }
 
@@ -168,23 +159,17 @@ class StringState {
   /**
    * @return the string scanning mode.
    */
-  int getMode() {
-    return mode;
-  }
+  int getMode() => mode;
 
   /**
    * @return the quote character used to bound the current string.
    */
-  String getQuote() {
-    return quote;
-  }
+  String getQuote() => quote;
 
   /**
    * @return true if the current string is a multi-line string.
    */
-  bool isMultiLine() {
-    return multiLine;
-  }
+  bool isMultiLine() => multiLine;
 
   /**
    * @param mode the string scanning mode.
@@ -229,8 +214,8 @@ class InternalState {
   List<StringState> stringStateStack;
 
   InternalState() {
-    lookahead = new List<String>(NUM_LOOKAHEAD); // TODO ATT null-initialized
-    lookaheadPos = new List<Position>(NUM_LOOKAHEAD); // TODO ATT null-initialized
+    lookahead = new List<String>(NUM_LOOKAHEAD);
+    lookaheadPos = new List<Position>(NUM_LOOKAHEAD);
     stringStateStack = new List<StringState>();
     currentOffset = 0;
   }
@@ -246,7 +231,7 @@ class InternalState {
       ret.add(" = [");
       ret.add(tok.token);
       if (tok.value != null) {
-        ret.add(" (" + tok.value + ")");
+        ret.add(" (${tok.value})");
       }
       ret.add("], ");
     }
@@ -256,7 +241,7 @@ class InternalState {
       TokenData tok = tokens[i];
       ret.add(tok.token);
       if (tok.value != null) {
-        ret.add(" (" + tok.value + ")");
+        ret.add(" (${tok.value})");
       }
       if (i < tokens.length - 1) {
         ret.add(", ");
@@ -443,7 +428,6 @@ class DartScanner {
     } finally {
       //TODO
       //Tracer.end(logEvent);
-      //print(logEvent);
     } 
   }
 
