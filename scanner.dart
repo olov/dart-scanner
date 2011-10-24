@@ -14,12 +14,12 @@ class Position {
   int line;
   int col;
 
-  Position(int this.pos, int this.line, int this.col) {}
+  Position(int this.pos, int this.line, int this.col);  // No need to provide empty body for ctors.
 
   Position clone() => new Position(pos, line, col);
 
-  int getPos() => pos;
-  int getLine() => line;
+  int getPos() => pos;  // Looks too Java-esque, I'd have int get pos() => _pos;
+  int getLine() => line; // Ditto.
   int getCol() => col;
 
   void advance(bool isNewline) {
@@ -32,7 +32,7 @@ class Position {
     }
   }
 
-  String toString() => line + "," + col + "@" + pos;
+  String toString() => line + "," + col + "@" + pos;  // => "$line,$col@$pos"
 }
 
 
@@ -49,12 +49,12 @@ class Location {
   }
 
   Location clone() => new Location(begin.clone(),
-                                   (begin == end) ? null : end.clone());
+                                   (begin == end) ? null : end.clone());  // All those clone methods make me ask if fields should be final in classes?
 
-  Position getBegin() => begin;
+  Position getBegin() => begin; // see above
   Position getEnd() => end;
 
-  String toString() => begin.toString() + "::" + end.toString();
+  String toString() => begin.toString() + "::" + end.toString(); // => "$begin::$end"
 }
 
 class RollbackToken {
@@ -63,12 +63,12 @@ class RollbackToken {
 
   RollbackToken(int tokenOffset, Token token)
       : absoluteOffset = tokenOffset, replacedToken = token {
-  }
+  } // RollbackToken(this.absoluteOffset, this.replacedToke); ?
 }
 
 
 class State {
-  State(int this.baseOffset) {}
+  State(int this.baseOffset) {}  // State(this.baseOffset); ?
 
   /* Stack of tokens present before setPeek() */
   List<RollbackToken> rollbackTokens = null;
@@ -126,7 +126,7 @@ class StringState {
    * {@link Mode#IN_STRING_EMBEDDED_EXPRESSION}, mark that we have seen an
    * opening brace.
    *
-   * @param mode
+   * @param mode  // Javadoc comments, [mode] in Dart
    * @param quote
    * @param multiLine
    */
@@ -216,7 +216,7 @@ class InternalState {
   InternalState() {
     lookahead = new List<String>(NUM_LOOKAHEAD);
     lookaheadPos = new List<Position>(NUM_LOOKAHEAD);
-    stringStateStack = new List<StringState>();
+    stringStateStack = new List<StringState>(); // = <StringState> []?
     currentOffset = 0;
   }
 
