@@ -14,7 +14,7 @@ class Position {
   int line;
   int col;
 
-  Position(int this.pos, int this.line, int this.col) {}
+  Position(int this.pos, int this.line, int this.col);
 
   Position clone() => new Position(pos, line, col);
 
@@ -32,7 +32,7 @@ class Position {
     }
   }
 
-  String toString() => line + "," + col + "@" + pos;
+  String toString() => "$line,$col@$pos";
 }
 
 
@@ -41,20 +41,19 @@ class Position {
  */
 class Location {
   static final Location NONE = null;
-  Position begin, end;
+  final Position _begin, _end;
 
-  Location(Position begin, [Position end]) {
-    this.begin = begin;
-    this.end = (null != end ? end : begin);
+  Location(Position begin, [Position end])
+      : _begin = begin, _end = (null != end ? end : begin) {
   }
 
-  Location clone() => new Location(begin.clone(),
-                                   (begin == end) ? null : end.clone());
+  Location clone() => new Location(_begin.clone(),
+                                   (_begin == _end) ? null : _end.clone());
 
-  Position getBegin() => begin;
-  Position getEnd() => end;
+  Position getBegin() => _begin;
+  Position getEnd() => _end;
 
-  String toString() => begin.toString() + "::" + end.toString();
+  String toString() => "$_begin::$_end";
 }
 
 class RollbackToken {
@@ -68,7 +67,7 @@ class RollbackToken {
 
 
 class State {
-  State(int this.baseOffset) {}
+  State(int this.baseOffset);
 
   /* Stack of tokens present before setPeek() */
   List<RollbackToken> rollbackTokens = null;
@@ -216,7 +215,7 @@ class InternalState {
   InternalState() {
     lookahead = new List<String>(NUM_LOOKAHEAD);
     lookaheadPos = new List<Position>(NUM_LOOKAHEAD);
-    stringStateStack = new List<StringState>();
+    stringStateStack = <StringState>[];
     currentOffset = 0;
   }
 
@@ -408,7 +407,7 @@ class DartScanner {
     try {
       this.source = source;
       internalState = new InternalState();
-      internalState.tokens = new List<TokenData>(); // TODO check not needed (source.length ~/ 2);
+      internalState.tokens = <TokenData>[]; // TODO check not needed (source.length ~/ 2);
 
       // Initialize lookahead positions.
       // TODO Determine if line & column should be relative to 0 or 'start'
