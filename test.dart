@@ -1,11 +1,12 @@
 #import("scanner.dart");
 #import("token.dart");
 
-String readFile(filename) {
-  // hack-hack-hack until I find the proper lib function/usage
-  List<int> buffer = new List<int>(100000);
-  int read = new File(filename, false).readList(buffer, 0, 100000);
-  return new String.fromCharCodes(buffer.getRange(0, read));
+String readFile(String filename) {
+  var file = new File(filename, false);
+  var buffer = new List<int>(file.length);
+  file.readList(buffer, 0, file.length);
+  file.close();
+  return new String.fromCharCodes(buffer);
 }
 
 main() {
