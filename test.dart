@@ -2,10 +2,12 @@
 #import("token.dart");
 
 String readFile(String filename) {
-  var file = new File(filename, false);
-  var buffer = new List<int>(file.length);
-  file.readList(buffer, 0, file.length);
-  file.close();
+  File file = new File(filename);
+  file.openSync();
+  int len = file.lengthSync();
+  List buffer = new List<int>(len);
+  file.readListSync(buffer, 0, len);
+  file.closeSync();
   return new String.fromCharCodes(buffer);
 }
 
