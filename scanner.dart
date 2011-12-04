@@ -887,10 +887,10 @@ class DartScanner {
         advance();
         switch (c) {
           case 'b':
-            c = 0x08;
+            c = '\b';
             break;
           case 'f':
-            c = 0x0C;
+            c = '\f';
             break;
           case 'n':
             c = '\n';
@@ -902,7 +902,7 @@ class DartScanner {
             c = '\t';
             break;
           case 'v':
-            c = 0x0B;
+            c = '\v';
             break;
           case 'x':
           case 'u':
@@ -1274,7 +1274,7 @@ class DartScanner {
     advance();
     while (true) {
       String ch = lookahead(0);
-      if (ch < 'a' || ch > 'z') {
+      if (ch.compareTo('a') < 0 || ch.compareTo('z') > 0) {
         break;
       }
       advance();
